@@ -1,0 +1,144 @@
+<html></html>
+
+<head>SESI-5-CUYUNIVERSITY</head>
+<style>
+  #root {
+    background-color: tomato;
+    color: white;
+    font-size: 2em;
+    text-align: center;
+    height: 100vh;
+  }
+</style>
+
+<body>
+  <!-- INI KONTEN KITA -->
+  <div id="root">
+    <input type="text" placeholder="username" id="usernameInput" />
+    <input type="password" placeholder="password" id="passwordInput" />
+    <button onclick="onLogin()" id="loginButton">LOGIN</button>
+    <button onclick="onRegister()" id="registerButton">REGISTER</button>
+    <button onclick="onLogout()" id="logoutButton">LOGOUT</button>
+    <br />
+    <h1 id="admin">LOGIN SEBAGAI ADMIN</h1>
+    <h1 id="basic">LOGIN SEBAGAI USER BIASA</h1>
+    <h1 id="moderator">LOGIN SEBAGAI MODERATOR</h1>
+  </div>
+
+  <script type="application/javascript">
+    let usernameInput = document.getElementById('usernameInput');
+    let passwordInput = document.getElementById('passwordInput');
+    let loginButton = document.getElementById('loginButton');
+    let registerButton = document.getElementById('registerButton');
+    let logoutButton = document.getElementById('logoutButton');
+    let admin = document.getElementById('admin');
+    let basic = document.getElementById('basic');
+    let moderator = document.getElementById('moderator');
+
+    admin.style.display = "none";
+    basic.style.display = "none";
+    moderator.style.display = "none";
+    logoutButton.style.display = "none";
+
+    // Passwords for specific roles
+    const rolePasswords = {
+      admin: "admin123",
+      moderator: "moderator123"
+    };
+
+    // Register function (updated)
+    function onRegister() {
+      let username = prompt("Enter a username:");
+      let password = prompt("Enter a password:");
+      let role = prompt("Enter a role (admin, basic, moderator):");
+
+      // Validate role-specific passwords
+      if (role === "admin" && password !== rolePasswords.admin) {
+        alert("Incorrect password for admin.");
+        return;
+      }
+      if (role === "moderator" && password !== rolePasswords.moderator) {
+        alert("Incorrect password for moderator.");
+        return;
+      }
+
+      let registeredUsers = JSON.parse(localStorage.getItem('users')) || [];
+      
+      // Cek apakah username sudah terdaftar
+      let existingUser = registeredUsers.find(u => u.username === username);
+      if (existingUser) {
+        alert("Username already exists!");
+        return;
+      }
+
+      let newUser = { username, password, role };
+      registeredUsers.push(newUser);
+
+      // Simpan ke localStorage
+      localStorage.setItem('users', JSON.stringify(registeredUsers));
+
+      // Debug untuk mengecek apakah berhasil tersimpan
+      console.log("Registered Users:", registeredUsers);
+
+      alert("User registered successfully!");
+    }
+
+    // Login function
+    function onLogin() {
+      let registeredUsers = JSON.parse(localStorage.getItem('users')) || [];
+      let username = usernameInput.value;
+      let password = passwordInput.value;
+      let user = registeredUsers.find(u => u.username === username && u.password === password);
+
+      if (user) {
+        if ((user.role === 'admin' && password !== rolePasswords.admin) ||
+            (user.role === 'moderator' && password !== rolePasswords.moderator)) {
+          alert("Incorrect password for " + user.role + " role.");
+          return;
+        }
+        localStorage.setItem("username", username);
+        localStorage.setItem("role", user.role);
+        displayRoleDashboard(user.role);
+      } else {
+        alert("Invalid login credentials!");
+      }
+    }
+
+    // Display dashboard based on role
+    function displayRoleDashboard(role) {
+      usernameInput.style.display = "none";
+      passwordInput.style.display = "none";
+      loginButton.style.display = "none";
+      registerButton.style.display = "none";
+      logoutButton.style.display = "block";
+
+      if (role === "admin") {
+        admin.style.display = "block";
+        basic.style.display = "none";
+        moderator.style.display = "none";
+      } else if (role === "basic") {
+        admin.style.display = "none";
+        basic.style.display = "block";
+        moderator.style.display = "none";
+      } else if (role === "moderator") {
+        admin.style.display = "none";
+        basic.style.display = "none";
+        moderator.style.display = "block";
+      }
+    }
+
+    // Check if user is already logged in
+    if (localStorage.getItem('username')) {
+      let role = localStorage.getItem('role');
+      displayRoleDashboard(role);
+    }
+
+    // Logout function
+    function onLogout() {
+      localStorage.clear();
+      location.reload();
+    }
+  </script>
+</body>
+
+</html>
